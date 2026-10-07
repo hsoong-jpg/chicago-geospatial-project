@@ -1,5 +1,5 @@
 import pandas as pd
-import geopandas as gpd
+import geopandas as gpd 
 
 # -------------------------
 # 1. LOAD DATA
@@ -16,6 +16,7 @@ crime = gpd.GeoDataFrame(
 )
 
 stations = gpd.read_file("CTA_-_'L'_(Rail)_Stations_20260416.geojson")
+stations = stations.rename(columns={"longname": "station_name"})
 
 
 # -------------------------
@@ -38,9 +39,10 @@ stations["buff500m"] = stations.geometry.buffer(500)
 # 4. SPATIAL JOINS
 # -------------------------
 
-#Creates new data set where the geometry is the buffer around the station
-# station_name for labeling map 
-#station_id for joins
+# Creates new data sets where the geometry is the buffer around the station
+# station_name is used for labeling
+# station_id is used for joins
+
 buff250 = gpd.GeoDataFrame(
     stations[["station_id", "station_name"]],
     geometry=stations["buff250m"],
@@ -48,14 +50,14 @@ buff250 = gpd.GeoDataFrame(
 )
 
 buff500 = gpd.GeoDataFrame(
-    stations[["station_id"]],
+    stations[["station_id", "station_name"]],
     geometry=stations["buff500m"],
     crs=stations.crs
 )
-#Finds all crime within the buffers
+
+# Finds all crime within the buffers
 join250 = gpd.sjoin(crime, buff250, predicate="within")
 join500 = gpd.sjoin(crime, buff500, predicate="within")
-
 
 # -------------------------
 # 5. COUNT CRIMES PER STATION
